@@ -1,0 +1,4 @@
+import { currentUser } from "@/lib/server/auth";
+import { setGoldRateOverride } from "@/lib/server/db";
+import { jsonError } from "@/lib/server/validation";
+export async function PATCH(request: Request) { try { const user = await currentUser(); if (!user || user.role !== "ADMIN") throw new Error("Admin access required"); const body = await request.json(); if (!Array.isArray(body.rates) || body.rates.length !== 3) throw new Error("Three gold rates are required"); const snapshot = { city: String(body.city || "Coimbatore"), updatedAt: new Date().toISOString(), rates: body.rates.map((rate: { purity: string; ratePerGram: number }) => ({ purity: rate.purity, ratePerGram: Number(rate.ratePerGram) })) }; return Response.json({ snapshot: await setGoldRateOverride(snapshot as never) }); } catch (error) { return jsonError(error, 403); } }

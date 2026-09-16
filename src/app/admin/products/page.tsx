@@ -1,0 +1,17 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { Breadcrumb } from "@/components/ui/Breadcrumb";
+import { Button } from "@/components/ui/Button";
+import { Input, Textarea } from "@/components/ui/Input";
+import { formatINR } from "@/lib/utils";
+
+type Product = { id: string; name: string; price: number; makingCharge: number; inStock: boolean; description: string };
+
+export default function AdminProductsPage() {
+  const [products, setProducts] = useState<Product[]>([]); const [error, setError] = useState(""); const [notice, setNotice] = useState("");
+  async function load() { const response = await fetch("/api/admin/products"); const result = await response.json(); if (!response.ok) setError(result.error); else setProducts(result.products); }
+  useEffect(() => { const timer = window.setTimeout(() => { void load(); }, 0); return () => window.clearTimeout(timer); }, []);
+  async function save(product: Product) { const response = await fetch(`/api/admin/products/${product.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: product.name, price: Number(product.price), makingCharge: Number(product.makingCharge), description: product.description, inStock: product.inStock }) }); if (response.ok) setNotice(`${product.name} updated`); else setError((await response.json()).error); }
+  return <div className="container-page py-10"><Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Admin", href: "/admin" }, { label: "Product Management" }]} /><div className="flex items-end justify-between mt-4 mb-6"><div><p className="eyebrow text-gold-600">Admin</p><h1 className="font-display text-3xl text-maroon-900">Product Management</h1></div><Button variant="outline" onClick={() => window.location.href = "/admin"}>Dashboard</Button></div>{error && <p className="text-red-700 mb-4">{error}</p>}{notice && <p className="text-emerald-700 mb-4">{notice}</p>}<div className="flex flex-col gap-5">{products.map((product) => <div key={product.id} className="border border-ink-300/25 bg-cream-100 p-5"><div className="flex items-center justify-between gap-4 mb-4"><div><h2 className="font-display text-xl text-maroon-900">{product.name}</h2><p className="text-xs text-ink-500">{product.id} · Current price {formatINR(product.price)}</p></div><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={product.inStock} onChange={(event) => setProducts(products.map((item) => item.id === product.id ? { ...item, inStock: event.target.checked } : item))} /> In stock</label></div><div className="grid md:grid-cols-3 gap-4"><Input label="Name" value={product.name} onChange={(event) => setProducts(products.map((item) => item.id === product.id ? { ...item, name: event.target.value } : item))} /><Input label="Price" type="number" value={product.price} onChange={(event) => setProducts(products.map((item) => item.id === product.id ? { ...item, price: Number(event.target.value) } : item))} /><Input label="Making Charge" type="number" value={product.makingCharge} onChange={(event) => setProducts(products.map((item) => item.id === product.id ? { ...item, makingCharge: Number(event.target.value) } : item))} /></div><Textarea className="mt-4" label="Description" value={product.description} onChange={(event) => setProducts(products.map((item) => item.id === product.id ? { ...item, description: event.target.value } : item))} /><Button className="mt-4" onClick={() => save(product)}>Save Changes</Button></div>)}</div></div>;
+}

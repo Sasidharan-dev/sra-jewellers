@@ -1,0 +1,21 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { Breadcrumb } from "@/components/ui/Breadcrumb";
+import { Button } from "@/components/ui/Button";
+import { formatINR } from "@/lib/utils";
+
+type Order = { orderId: string; customerName: string; phone: string; email: string; total: number; paymentStatus: string; currentStepIndex: number; address: { address: string; city: string; state: string; pincode: string; country: string } };
+const statuses = ["Order Placed", "Order Confirmed", "Payment Confirmed", "Jewellery in Making", "Quality Check", "Ready for Delivery", "Delivered"];
+
+export default function AdminOrdersPage() {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState("");
+
+  async function loadOrders() { const response = await fetch("/api/admin/overview"); const data = await response.json(); if (!response.ok) setError(data.error); else setOrders(data.orders); }
+  useEffect(() => { loadOrders(); }, []);
+  async function updateStatus(orderId: string, currentStepIndex: number) { setSaving(orderId); const response = await fetch(`/api/admin/orders/${orderId}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ currentStepIndex }) }); const data = await response.json(); if (!response.ok) setError(data.error || "Could not update status"); else setOrders((items) => items.map((item) => item.orderId === orderId ? { ...item, currentStepIndex: data.order.currentStepIndex } : item)); setSaving(""); }
+
+  return <div className="container-page py-10"><Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Admin", href: "/admin" }, { label: "Customer Orders" }]} /><div className="mt-4 mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="eyebrow text-gold-600">Admin</p><h1 className="font-display text-3xl text-maroon-900">Customer Orders &amp; Addresses</h1><p className="mt-2 text-sm text-ink-500">Update delivery status and review customer information.</p></div><Button variant="outline" onClick={() => window.location.assign("/admin")}>Dashboard</Button></div>{error && <p className="mb-4 text-sm text-red-700">{error}</p>}{orders.length === 0 ? <p className="text-sm text-ink-500">No orders yet.</p> : <div className="flex flex-col gap-4">{orders.map((order) => <details key={order.orderId} className="border border-ink-300/25 bg-cream-100 p-4 sm:p-5"><summary className="flex cursor-pointer list-none flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><span><strong>{order.orderId}</strong> · {order.customerName}<br /><span className="text-xs text-ink-500">{order.email} · {formatINR(order.total)} · {order.paymentStatus}</span></span><span className="w-fit border border-gold-400/60 bg-gold-100/30 px-2 py-1 text-xs text-maroon-800">{statuses[order.currentStepIndex] ?? "Processing"}</span></summary><div className="mt-5 border-t border-ink-300/20 pt-4"><div className="grid gap-2 text-sm text-ink-700 md:grid-cols-2"><p><strong>Customer:</strong> {order.customerName}</p><p><strong>Phone:</strong> {order.phone}</p><p><strong>Email:</strong> {order.email}</p><p><strong>Total:</strong> {formatINR(order.total)}</p><p className="md:col-span-2"><strong>Address:</strong> {order.address.address}</p><p><strong>City:</strong> {order.address.city}</p><p><strong>State:</strong> {order.address.state}</p><p><strong>Pincode:</strong> {order.address.pincode}</p><p><strong>Country:</strong> {order.address.country}</p></div><div className="mt-5 flex flex-col gap-2 border-t border-ink-300/20 pt-4 sm:flex-row sm:items-center"><label htmlFor={`status-${order.orderId}`} className="text-sm font-medium text-maroon-900">Update order status</label><select id={`status-${order.orderId}`} value={order.currentStepIndex} disabled={saving === order.orderId} onChange={(event) => updateStatus(order.orderId, Number(event.target.value))} className="w-full border border-ink-300/40 bg-cream-100 px-3 py-2 text-sm outline-none focus:border-gold-500 sm:max-w-sm">{statuses.map((status, index) => <option value={index} key={status}>{status}</option>)}</select>{saving === order.orderId && <span className="text-xs text-ink-500">Saving…</span>}</div></div></details>)}</div>}</div>;
+}

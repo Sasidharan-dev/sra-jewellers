@@ -1,0 +1,5 @@
+import { Breadcrumb } from "@/components/ui/Breadcrumb";
+
+export default function PrivacyPolicyPage() {
+  return <div className="container-page py-10"><Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Privacy Policy" }]} /><article className="prose prose-sm max-w-3xl mx-auto mt-8 text-ink-700"><h1 className="font-display text-4xl text-maroon-900">Privacy Policy</h1><p>At SRA Jewellers, we respect your privacy and protect the information you share with us.</p><h2>Information we collect</h2><p>We may collect your name, phone number, email, delivery address, order details, and custom-design information when you use our services.</p><h2>How we use your information</h2><p>We use this information to process orders, provide customer support, deliver products, respond to enquiries, and improve our services. We do not sell your personal information.</p><h2>Data protection</h2><p>Your account password is stored securely. Payment details are handled by the selected payment provider and are not stored by SRA Jewellers.</p><h2>Contact</h2><p>For privacy questions, contact support@srajewels.com.</p></article></div>;
+}
