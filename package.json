@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "vercel-build": "prisma db push && next build",
+    "vercel-build": "if [ -n \"$DATABASE_URL\" ]; then prisma db push; fi && next build",
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate",
