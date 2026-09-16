@@ -1,6 +1,6 @@
 # Vercel database setup
 
-The app currently uses `data/database.json` for local development. The Prisma schema in `prisma/schema.prisma` is the production PostgreSQL blueprint.
+The app uses `data/database.json` only for local development without a database. When `DATABASE_URL` is present on Vercel, authentication, profiles, orders, sessions, and wishlist data use PostgreSQL through Prisma.
 
 ## Supabase / PostgreSQL setup
 
@@ -8,7 +8,8 @@ The app currently uses `data/database.json` for local development. The Prisma sc
 2. Copy the pooled connection string into `DATABASE_URL`.
 3. Copy the direct connection string into `DIRECT_URL`.
 4. Keep both values server-only; never use them as `NEXT_PUBLIC_*` variables.
-5. Run locally before deployment:
+5. Every Vercel deployment runs `prisma db push` before the Next.js build, so the tables are created automatically.
+6. For local database setup, run:
 
 ```bash
 npx prisma generate
@@ -23,9 +24,7 @@ npx prisma migrate deploy
 
 Then add the same `DATABASE_URL` and `DIRECT_URL` values in Vercel Project Settings → Environment Variables for Preview and Production.
 
-## Important migration note
-
-The current API still uses the JSON adapter so the portfolio demo works without credentials. Before using this as a live shop, replace the functions in `src/lib/server/db.ts` with Prisma queries and migrate existing local data manually. Do not upload `data/database.json` or customer data to GitHub.
+Do not upload `data/database.json` or customer data to GitHub. Accounts created before PostgreSQL was enabled were stored only in temporary Vercel storage; create the customer account again after the first database-backed deployment.
 
 ## Production checklist
 
