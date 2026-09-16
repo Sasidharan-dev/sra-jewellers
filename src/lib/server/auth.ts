@@ -1,6 +1,10 @@
 import { cookies } from "next/headers";
 import { randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
-import { createSession, deleteSession, getUserBySession } from "@/lib/server/db";
+import {
+  createSession,
+  deleteSession,
+  getUserBySession,
+} from "@/lib/server/db";
 
 const cookieName = "sra_session";
 
@@ -18,10 +22,18 @@ export function verifyPassword(password: string, stored: string) {
 
 export async function startSession(userId: string) {
   const token = randomBytes(32).toString("hex");
-  const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString();
+  const expiresAt = new Date(
+    Date.now() + 1000 * 60 * 60 * 24 * 30,
+  ).toISOString();
   await createSession(userId, token, expiresAt);
   const cookieStore = await cookies();
-  cookieStore.set(cookieName, token, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", expires: new Date(expiresAt) });
+  cookieStore.set(cookieName, token, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    expires: new Date(expiresAt),
+  });
 }
 
 export async function currentUser() {
@@ -42,6 +54,20 @@ export async function requireUser() {
   return user;
 }
 
-export function publicUser(user: { id: string; name: string; email: string; phone: string; role: string; address?: unknown }) {
-  return { id: user.id, name: user.name, email: user.email, phone: user.phone, role: user.role, address: user.address ?? null };
+export function publicUser(user: {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  role: string;
+  address?: unknown;
+}) {
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    phone: user.phone,
+    role: user.role,
+    address: user.address ?? null,
+  };
 }

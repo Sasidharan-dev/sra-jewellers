@@ -3,9 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
 }
 
 model User {
@@ -51,6 +49,8 @@ model Order {
   makingCharges     Int
   tax               Int
   total             Int
+  razorpayOrderId   String?
+  razorpayPaymentId String?
   user              User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
   items             OrderItem[]
   @@index([userId])
