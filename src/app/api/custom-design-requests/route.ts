@@ -14,7 +14,7 @@ export async function POST(request: Request) {
       if (file.size > 8 * 1024 * 1024) throw new Error("File must be smaller than 8MB");
       if (!["image/jpeg", "image/png", "image/webp", "application/pdf"].includes(file.type)) throw new Error("Only JPG, PNG, WEBP, or PDF files are allowed");
       const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
-      const uploadDir = path.join(process.cwd(), "data", "uploads");
+      const uploadDir = process.env.VERCEL ? path.join("/tmp", "sra-jewellers", "uploads") : path.join(process.cwd(), "data", "uploads");
       await fs.mkdir(uploadDir, { recursive: true });
       await fs.writeFile(path.join(uploadDir, `${id}-${safeName}`), Buffer.from(await file.arrayBuffer()));
       fileName = safeName;

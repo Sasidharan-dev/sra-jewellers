@@ -44,7 +44,10 @@ type Database = {
   notifications: { id: string; type: string; recipient: string; subject: string; body: string; createdAt: string }[];
 };
 
-const databasePath = path.join(process.cwd(), "data", "database.json");
+// Vercel's deployed bundle is read-only. `/tmp` is writable for the lifetime of
+// a serverless instance, while local development keeps using data/database.json.
+const databaseDirectory = process.env.VERCEL ? path.join("/tmp", "sra-jewellers") : path.join(process.cwd(), "data");
+const databasePath = path.join(databaseDirectory, "database.json");
 let writeQueue = Promise.resolve();
 
 const emptyDatabase: Database = { orders: [], contacts: [], designRequests: [], newsletter: [], users: [], sessions: [], productOverrides: {}, customProducts: [], deletedProductIds: [], contactStatuses: {}, designStatuses: {}, passwordResets: [], reviews: [], wishlists: {}, notifications: [] };
